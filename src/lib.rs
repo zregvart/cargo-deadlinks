@@ -9,7 +9,7 @@ use walkdir::{DirEntry, WalkDir};
 use check::is_available;
 use parse::parse_html_file;
 
-pub use check::{CheckError, HttpError};
+pub use check::{CheckError, IoError};
 
 mod check;
 mod parse;
@@ -42,13 +42,18 @@ impl FileError {
             use CheckError::*;
 
             match e {
-                Http(_) => ret.push_str(&format!("\n\t{}", e)),
                 File(epath) => {
                     let epath = epath.strip_prefix(&prefix).unwrap_or(&epath);
                     ret.push_str("\n\tLinked file at path ");
                     ret.push_str(&epath.display().to_string());
                     ret.push_str(" does not exist!");
                 }
+                Http(_) => ret.push_str(&format!("\n\t{}", e)),
+                Fragment(_, _, _) => {
+                    ret.push_str("\n\t");
+                    ret.push_str(e.to_string().as_str());
+                }
+                Io(_) => ret.push_str(&format!("\n\t{}", e)),
             }
         }
         ret
