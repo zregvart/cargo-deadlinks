@@ -118,7 +118,9 @@ fn is_fragment_available(
 ) -> Result<(), CheckError> {
     let fragments = fragments_from(link, html)?;
 
-    if fragments.contains(fragment) {
+    // Empty fragments (e.g. file.html#) are commonly used to reach the top
+    // of the document, see https://html.spec.whatwg.org/multipage/browsing-the-web.html#scroll-to-fragid
+    if fragment.is_empty() || fragments.contains(fragment) {
         return Ok(());
     }
 
@@ -314,6 +316,11 @@ mod test {
     #[test]
     fn test_anchors() {
         test_check_file_url("tests/html/anchors.html#h1").unwrap();
+    }
+
+    #[test]
+    fn test_hash_fragment() {
+        test_check_file_url("tests/html/anchors.html#").unwrap();
     }
 
     #[test]
